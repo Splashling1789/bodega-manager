@@ -1,27 +1,35 @@
+///Módulo que gestiona la conexión a la base de datos de mysql con el uso del archivo .env
 pub mod connection_manager {
     use std::env;
     use std::env::VarError;
     use dotenv::{Error, from_path};
     use mysql::{Pool, PooledConn};
+    const VAR_USER:&str = "DB_USER";
+    const VAR_PASSWORD:&str = "DB_PASSWORD";
+    const VAR_HOST:&str = "DB_HOST";
 
     pub fn get_envs() -> (Result<String, VarError>, Result<String, VarError>, Result<String, VarError>) {
-    match from_path(".env") {
-        Ok(()) => {
-            return (env::var("DB_USER"), env::var("DB_PASSWORD"), env::var("DB_HOST"));
-        }
-        Err(e) => {
-            println!("No se pudieron leer las variables de entorno desde el directorio .env: {}", e);
-            return (env::var("DB_USER"), env::var("DB_PASSWORD"), env::var("DB_HOST"));
+        //!Obtiene las variables de entorno DB_USER, DB_PASSWORD y DB_HOST del fichero .env en forma de resultados (pueden ser correctos o erróneos).
+        match from_path(".env") {
+            Ok(()) => {
+                return (env::var(VAR_USER), env::var(VAR_PASSWORD), env::var(VAR_HOST));
             }
+            Err(e) => {
+                println!("No se pudieron leer las variables de entorno desde el directorio .env: {}", e);
+                return (env::var(VAR_USER), env::var(VAR_PASSWORD), env::var("VAR_HOST"));
+                }
         }
     }
 
+
     fn get_connection(user:String, password:String, host:String) -> Result<PooledConn, mysql::Error>{
+        //!Devuelve una conexión en forma de resultado a un servidor mysql a partir del usuario, contraseña y host.
         let url = format!("mysql://{}:{}@{}", user, password, host);
         return Pool::new(url.as_str())?.get_conn();
     }
 
     pub fn connect(data:(Result<String, VarError>, Result<String, VarError>, Result<String, VarError>)) -> Result<PooledConn, mysql::Error>{
+        //!Comprueba que las variables obtenidas en get_envs() no son erróneas, y devuelve la conexión usando el método get_connection()
         match data.0 {
             Ok(user) => {
                 match data.1 {
@@ -31,19 +39,19 @@ pub mod connection_manager {
                                 return get_connection(user, password, host);
                             }
                             Err(e) => {
-                                println!("Error al obtener la varuable DB_HOST: {}", e);
+                                println!("Error al obtener la variable {}: {}",VAR_HOST, e);
                                 return get_connection(user, password, format!("NULL"));
                             }
                         }
                     }
                     Err(e) => {
-                        println!("Error al obtener la variable DB_PASSWORD: {}", e);
+                        println!("Error al obtener la variable {}: {}",VAR_PASSWORD, e);
                         return get_connection(user, format!("NULL"), format!("NULL"));
                     }
                 }
             }
             Err(e) => {
-                println!("Error al obtener la variable DB_USER: {}", e);
+                println!("Error al obtener la variable {}: {}",VAR_USER, e);
                 return get_connection(format!("NULL"), format!("NULL"), format!("NULL"));
             }
         }
