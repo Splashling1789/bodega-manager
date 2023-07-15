@@ -88,10 +88,10 @@ pub mod db_manager {
 
     pub fn insert_category(conn: &mut PooledConn, name: String, desc: String) -> Result<(), mysql::Error>{
         //!Inserta un registro de la tabla categorías dado nombre y descripción.
-        return conn.exec_drop("INSERT INTO categorias (nombre, descripcion), VALUES (:nombre, :descripcion)", params! {
+        return conn.exec_drop("INSERT INTO categorias (nombre, descripcion) VALUES (:nombre, :descripcion)", params! {
         "nombre" => name,
         "descripcion" => desc,
-    });
+    },);
     }
 
     pub fn delete_category(conn: &mut PooledConn, id: i32) -> Result<(), mysql::Error> {
