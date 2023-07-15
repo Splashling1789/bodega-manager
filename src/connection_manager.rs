@@ -2,14 +2,18 @@
 pub mod connection_manager {
     use std::env;
     use std::env::VarError;
-    use dotenv::{Error, from_path};
+    use dotenv::{from_path};
     use mysql::{Pool, PooledConn};
+
+    ///Especifica el nombre de la variable de entorno del usuario de la base de datos
     const VAR_USER:&str = "DB_USER";
+    ///Especifica el nombre de la variable de entorno de la contraseña de la base de datos
     const VAR_PASSWORD:&str = "DB_PASSWORD";
+    ///Especifica el nombre de la variable de entorno del host de la base de datos
     const VAR_HOST:&str = "DB_HOST";
 
     pub fn get_envs() -> (Result<String, VarError>, Result<String, VarError>, Result<String, VarError>) {
-        //!Obtiene las variables de entorno DB_USER, DB_PASSWORD y DB_HOST del fichero .env en forma de resultados (pueden ser correctos o erróneos).
+        //!Obtiene las variables de entorno especificadas en las constantes VAR_USER, VAR_PASSWORD y VAR_HOST del fichero .env en forma de resultados (pueden ser correctos o erróneos).
         match from_path(".env") {
             Ok(()) => {
                 return (env::var(VAR_USER), env::var(VAR_PASSWORD), env::var(VAR_HOST));
