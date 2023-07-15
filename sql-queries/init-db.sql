@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS objetos (
     id BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     categoria BIGINT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
-    medida TEXT NOT NULL,
+    medida VARCHAR(255) NOT NULL,
     FOREIGN KEY (categoria) REFERENCES categorias(id)
 );
 
