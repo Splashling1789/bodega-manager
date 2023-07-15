@@ -4,14 +4,14 @@ pub mod db_manager {
     use mysql::prelude::Queryable;
     #[derive(Clone)]
     ///Estructura basada en la tabla categorias de la base de datos bodega-db
-    struct Categoria {
+    pub struct Categoria {
         id:i32,
         nombre:String,
         descripcion:String
     }
 
     ///Estructura basada en la tabla objetos de la base de datos bodega-db
-    struct Objeto {
+    pub struct Objeto {
         id:i32,
         categoria: Categoria,
         nombre:String,
@@ -19,7 +19,7 @@ pub mod db_manager {
     }
 
     ///Estructura basada en la tabla existencias-home o existencias-tara de la base de datos bodega-db
-    struct Existencia {
+    pub struct Existencia {
         objeto: Objeto,
         cantidad:i32
     }
