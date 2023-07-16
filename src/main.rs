@@ -50,7 +50,6 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
             println!("Qué desea realizar?");
             println!("1. Agregar una categoría");
             println!("2. Eliminar una categoría");
-            println!("{:?}", option);
             stdin().read_line(option);
             match option.trim() {
                 "1" => {
@@ -61,7 +60,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                     stdin().read_line(&mut nombre);
                     println!("\nDescripción de la nueva categoría: ");
                     stdin().read_line(&mut desc);
-                    match insert_category(connection, nombre, desc) {
+                    match insert_category(connection, String::from(nombre.trim()), String::from(desc.trim())) {
                         Ok(()) => {
                             println!("La categoría se creó satisfactoriamente");
                         }
@@ -97,10 +96,83 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                 }
             }
         }
+        "5" => {
+            *option = String::from("");
+            clear();
+            let categories = read_categories(connection);
+            print_objects(read_objects(connection, categories));
+            println!("Qué desea realizar?");
+            println!("1. Agregar un objeto");
+            println!("2. Eliminar un objeto");
+            stdin().read_line(option);
+            match option.trim() {
+                "1" => {
+                    print_categories(read_categories(connection));
+                    let mut id_cat = String::new();
+                    println!("Inserta el ID de la categoría a la que pertenece: ");
+                    stdin().read_line(&mut id_cat);
+                    match id_cat.trim().parse::<i32>() {
+                        Ok(id) => {
+                            match get_category_by_id(id, read_categories(connection)) {
+                                Some(cat) => {
+                                    let mut nombre = String::new();
+                                    println!("Inserta el nombre del objeto: ");
+                                    stdin().read_line(&mut nombre);
+                                    let mut medida = String::new();
+                                    println!("Inserta la unidad de medida del objeto: ");
+                                    stdin().read_line(&mut medida);
+                                    nombre= String::from(nombre.trim());
+                                    medida = String::from(medida.trim());
+                                    match insert_object(connection, cat, nombre, medida) {
+                                        Ok(()) => {
+                                            println!("El objeto se creó satisfactoriamente");
+                                        }
+                                        Err(e) => {
+                                            println!("Ocurrió un error al crear el objeto: {}", e);
+                                        }
+                                    }
+                                }
+                                _ => {
+                                    println!("Ocurrió un error al buscar la categoría. ¿Es posible que el id dado no corresponda a ninguna categoría?");
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            println!("Ocurrió un error con el id proporcionado. ¿Ha dado un número? {}", e);
+                        }
+                    }
+                }
+                "2" => {
+                    *option= String::from("");
+                    let mut inp = String::new();
+                    println!("Introduce el ID del objeto a eliminar: ");
+                    stdin().read_line(&mut inp);
+                    match inp.trim().parse::<i32>() {
+                        Ok(id) => {
+                            match delete_object(connection, id) {
+                                Ok(()) => {
+                                    println!("Objeto eliminado satisfactoriamente");
+                                }
+                                Err(e) => {
+                                    println!("Ocurrió un error al eliminar el objeto: {}", e);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            println!("Ocurrió un error con los datos que ha proporcionado. ¿Ha puesto algo que no sea un número? {}", e);
+                        }
+                    }
+                }
+                _ => {
+                    println!("No ha seleccionado ninguna opción. Volviendo al menú");
+                }
+            }
+        }
         _ => {
             println!("No ha seleccionado ninguna opción. Volviendo al menú");
         }
     }
+    let _ = stdin().lock().lines().next();
 }
 
 
