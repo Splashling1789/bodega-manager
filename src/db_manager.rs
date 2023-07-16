@@ -2,6 +2,13 @@
 pub mod db_manager {
     use mysql::{params, PooledConn};
     use mysql::prelude::Queryable;
+
+    ///Enum para indicar la base de datos de la que procede la existencia.
+    pub enum Procedencia {
+        Casa,
+        Tara,
+    }
+
     #[derive(Clone)]
     ///Estructura basada en la tabla categorias de la base de datos bodega-db
     pub struct Categoria {
@@ -21,7 +28,8 @@ pub mod db_manager {
     ///Estructura basada en la tabla existencias-home o existencias-tara de la base de datos bodega-db
     pub struct Existencia {
         objeto: Objeto,
-        cantidad:i32
+        cantidad:i32,
+        procedencia:Procedencia
     }
 
     pub fn read_objects(connection: &mut PooledConn, categories: Vec<Categoria>) -> Vec<Objeto> {
