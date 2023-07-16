@@ -17,6 +17,7 @@ pub mod db_manager {
         descripcion:String
     }
 
+    #[derive(Clone)]
     ///Estructura basada en la tabla objetos de la base de datos bodega-db
     pub struct Objeto {
         id:i32,
@@ -85,6 +86,16 @@ pub mod db_manager {
         },);
     }
 
+    pub fn get_object_by_id(id:i32, objects: Vec<Objeto>) -> Option<Objeto> {
+        //!Busca el objeto dentro de un vector de objetos que corresponde a un id dado.
+        for o in objects {
+            if o.id == id {
+                return Some(o);
+            }
+        }
+        return None;
+    }
+
     pub fn print_categories(categories:Vec<Categoria>) {
         //!Imprime las categorías de la tabla categorias de la base de datos.
         for c in categories {
@@ -123,4 +134,57 @@ pub mod db_manager {
         }
         return None;
     }
+
+    pub fn read_stock(conn: &mut PooledConn, location: Option<Procedencia>) -> Vec<Existencia> {
+        //!Lee las existencias en la tabla indicada en location. Si se indica "None", se devolverán ambas tablas: existencias_home y existencias_tara
+        let mut stock:Vec<Existencia> = vec![];
+        let categories = read_categories(conn);
+        let objects = read_objects(conn, categories);
+        match location {
+            Some(pr) => {
+                match pr {
+                    Procedencia::Casa => {
+                        let list: Vec<(i32, i32)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
+                        for o in list {
+                            stock.push(Existencia {
+                                objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
+                                cantidad:o.1,
+                                procedencia:Procedencia::Casa,
+                            })
+                        }
+                    }
+                    Procedencia::Tara => {
+                        let list: Vec<(i32, i32)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_tara", |(obj, quantity)| (obj, quantity)).unwrap();
+                        for o in list {
+                            stock.push(Existencia {
+                                objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
+                                cantidad:o.1,
+                                procedencia:Procedencia::Tara,
+                            })
+                        }
+                    }
+                }
+            }
+            None => {
+                let list_home: Vec<(i32, i32)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
+                for o in list_home {
+                    stock.push(Existencia {
+                        objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
+                        cantidad:o.1,
+                        procedencia:Procedencia::Casa,
+                    })
+                }
+                let list_tara: Vec<(i32, i32)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
+                for o in list_tara {
+                    stock.push(Existencia {
+                        objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
+                        cantidad:o.1,
+                        procedencia:Procedencia::Tara,
+                    })
+                }
+            }
+        }
+        return stock;
+    }
+
 }
