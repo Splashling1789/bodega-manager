@@ -38,11 +38,15 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
     println!("\n¿Qué deseas hacer?");
     *option = String::from("");
     stdin().read_line( option);
-    //TODO: opción 5
     //TODO: opción 3
-    //TODO: opción 1
     //TODO: opción 2
     match option.trim() {
+        "1" => {
+            *option= String::from("");
+            clear();
+            let list= read_objects(connection);
+            print_all_stock(connection, list);
+        }
         "4" => {
             *option = String::from("");
             clear();
@@ -99,8 +103,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
         "5" => {
             *option = String::from("");
             clear();
-            let categories = read_categories(connection);
-            print_objects(read_objects(connection, categories));
+            print_objects(read_objects(connection));
             println!("Qué desea realizar?");
             println!("1. Agregar un objeto");
             println!("2. Eliminar un objeto");
@@ -181,10 +184,12 @@ fn main() {
     println!("Conectando a la base de datos...");
     match connect(connection_manager::connection_manager::get_envs()) {
         Ok(c) => {
-            clear();
             let mut connection =c;
             let mut option = String::new();
-            loop {menu(&mut connection, &mut option)};
+            loop {
+                clear();
+                menu(&mut connection, &mut option);
+            };
         }
         Err(e) => {
             println!("Ocurrió un error al conectarse a la base de datos: {}", e)
