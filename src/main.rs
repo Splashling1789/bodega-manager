@@ -16,13 +16,29 @@ const MENU_SIZE:u16 = 55;
 
 #[doc= "Imprime el título determinado por la constante TITLE inicial con una anchura determinada por la constante MENU_SIZE"]
 macro_rules! print_title {
-    () => {for i in 1..MENU_SIZE { print!("-"); }
+    () => {
+        for i in 1..MENU_SIZE {
+            print!("-");
+        }
     print!("\n");
     for i in 1..((MENU_SIZE - TITLE.len() as u16) / 2) { print!(" "); }
     print!("{}", TITLE);
     print!("\n");
     for i in 1..MENU_SIZE { print!("-"); }
     print!("\n");
+    };
+}
+
+macro_rules! print_header {
+    ($title: expr) => {
+        for i in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
+            print!("-");
+        }
+        print!(" {} ", $title);
+                for i in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
+            print!("-");
+        }
+        print!("\n");
     };
 }
 
@@ -45,6 +61,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
             *option= String::from("");
             clear();
             let list= read_objects(connection);
+            print_header!("EXISTENCIAS");
             print_all_stock(connection, list);
         }
         "4" => {
