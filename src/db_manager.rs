@@ -220,6 +220,7 @@ pub mod db_manager {
     }
 
     pub fn get_stock_by_id(conn: &mut PooledConn, obj_id: i32) -> (Option<Existencia>, Option<Existencia>) {
+        //!Obtiene un par de opciones que determinan si hay o no registros de un objeto dado su id en la tabla existencias_home y existencias_tara
         let objs = read_objects(conn);
         let vec_home: Vec<Existencia> = conn.exec_map("SELECT * FROM existencias_home WHERE id_objeto=:id",params! {"id"=>obj_id}, |(id_objeto, cantidad)| {
             Existencia {
@@ -239,6 +240,7 @@ pub mod db_manager {
     }
 
     pub fn print_all_stock(conn: &mut PooledConn, list: Vec<Objeto>) {
+        //!Imprime aquellos objetos de los que hayan existencias en cualquiera de las dos tablas de existencias.
         for o in list {
             match get_stock_by_id(conn, o.id) {
                 (Some(h), Some(t)) => {

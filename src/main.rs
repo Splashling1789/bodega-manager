@@ -29,6 +29,7 @@ macro_rules! print_title {
     };
 }
 
+#[doc="Imprime un encabezado especificado en $title, con el tamaño especificado por la constante MENU_SIZE"]
 macro_rules! print_header {
     ($title: expr) => {
         for i in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
