@@ -354,7 +354,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
             *option = String::from("");
             clear();
             print_title!();
-            println!("Creada por Javier Albero para una necesidad personal y para aprender Rust y SQL.\n");
+            println!("Creada por Javier Albero para una necesidad personal y para aprender Rust y SQL.\nVer. alpha 1.0");
         }
         _ => {
             println!("No ha seleccionado ninguna opción. Volviendo al menú");
