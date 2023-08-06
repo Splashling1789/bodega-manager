@@ -4,7 +4,7 @@ pub mod db_manager {
     use mysql::prelude::Queryable;
 
     ///Enum para indicar la base de datos de la que procede la existencia.
-    #[derive(PartialEq, Clone)]
+    #[derive(PartialEq, Clone, Debug)]
     pub enum Procedencia {
         Casa,
         Tara,
@@ -39,7 +39,7 @@ pub mod db_manager {
     pub struct Objeto {
         id: i32,
         categoria: Categoria,
-        nombre: String,
+        pub nombre: String,
         medida: String,
     }
 
@@ -257,5 +257,44 @@ pub mod db_manager {
                 }
             }
         }
+    }
+
+    pub fn update_stock(conn: &mut PooledConn, id:i32, set_mode:bool, quant: i32, location: Procedencia) -> Result<(), mysql::Error> {
+        //!Actualiza un valor de existencias de un objeto con la id dada. Si set_mode es verdadero, se reemplazará el valor actual por quant, y si es false, se sumará el valor quant, positivo o negativo. location indica en qué base de datos realizar la operación
+        let mut query = String::new();
+        let mut mode = ";";
+        match set_mode {
+            true => {
+                mode = ":quant";
+            }
+            false => {
+                mode = "cantidad + :quant";
+            }
+        }
+        match location {
+            Procedencia::Casa => {
+                query = format!("INSERT INTO {} (id_objeto, cantidad) VALUES (:id, :quant)
+                ON DUPLICATE KEY UPDATE cantidad = {};", "existencias_home", mode);
+            }
+            Procedencia::Tara => {
+                query = format!("INSERT INTO {} (id_objeto, cantidad) VALUES (:id, :quant)
+                ON DUPLICATE KEY UPDATE cantidad = {};", "existencias_tara", mode);
+            }
+        }
+        match set_mode {
+            true => {
+                return conn.exec_drop(&query, params! {
+                    "quant" => quant,
+                    "id" => id
+                });
+            }
+            false => {
+                return conn.exec_drop(&query, params! {
+                    "quant" => quant,
+                    "id" => id
+                },);
+            }
+        }
+
     }
 }
