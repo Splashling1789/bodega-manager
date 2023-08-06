@@ -10,7 +10,7 @@ pub mod db_manager {
         Tara,
     }
 
-    fn contrary(loc: &Procedencia) -> Procedencia {
+    pub fn contrary(loc: &Procedencia) -> Procedencia {
         if *loc == Procedencia::Casa {
             return Procedencia::Tara;
         } else if *loc == Procedencia::Tara {
@@ -18,7 +18,7 @@ pub mod db_manager {
         } else { return Procedencia::Casa; }
     }
 
-    fn get_string_name(loc: &Procedencia) -> String {
+    pub fn get_string_name(loc: &Procedencia) -> String {
         if *loc == Procedencia::Casa {
             return String::from("Casa");
         } else if *loc == Procedencia::Tara {
@@ -37,10 +37,10 @@ pub mod db_manager {
     #[derive(Clone)]
     ///Estructura basada en la tabla objetos de la base de datos bodega-db
     pub struct Objeto {
-        id: i32,
+        pub id: i32,
         categoria: Categoria,
         pub nombre: String,
-        medida: String,
+        pub medida: String,
     }
 
 
@@ -239,17 +239,20 @@ pub mod db_manager {
         return (vec_home.get(0).cloned(), vec_tara.get(0).cloned());
     }
 
-    pub fn print_all_stock(conn: &mut PooledConn, list: Vec<Objeto>) {
+    pub fn print_all_stock(conn: &mut PooledConn, list: Vec<Objeto>, print_id:bool) {
         //!Imprime aquellos objetos de los que hayan existencias en cualquiera de las dos tablas de existencias.
         for o in list {
             match get_stock_by_id(conn, o.id) {
                 (Some(h), Some(t)) => {
+                    if print_id {print!("[ID:{}]", o.id);}
                     println!("{}: x{} {} en Casa; x{} {} en Tara", o.nombre, h.cantidad, o.medida, t.cantidad, o.medida);
                 }
                 (Some(h), None) => {
+                    if print_id {print!("[ID:{}]", o.id);}
                     println!("{}: x{} {} en Casa; x0 {} en Tara", o.nombre, h.cantidad, o.medida, o.medida);
                 }
                 (None, Some(t)) => {
+                    if print_id {print!("[ID:{}]", o.id);}
                     println!("{}: x0 {} en Casa; x{} {} en Tara", o.nombre, o.medida, t.cantidad, o.medida);
                 }
                 (None, None) => {
@@ -259,7 +262,7 @@ pub mod db_manager {
         }
     }
 
-    pub fn update_stock(conn: &mut PooledConn, id:i32, set_mode:bool, quant: i32, location: Procedencia) -> Result<(), mysql::Error> {
+    pub fn update_stock(conn: &mut PooledConn, id:i32, set_mode:bool, quant: f32, location: &Procedencia) -> Result<(), mysql::Error> {
         //!Actualiza un valor de existencias de un objeto con la id dada. Si set_mode es verdadero, se reemplazará el valor actual por quant, y si es false, se sumará el valor quant, positivo o negativo. location indica en qué base de datos realizar la operación
         let mut query = String::new();
         let mut mode = ";";
@@ -295,6 +298,5 @@ pub mod db_manager {
                 },);
             }
         }
-
     }
 }
