@@ -56,7 +56,6 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
     *option = String::from("");
     stdin().read_line( option);
     //TODO: opción 3
-    //TODO: opción 2
     match option.trim() {
         "1" => {
             *option= String::from("");
@@ -64,6 +63,96 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
             let list= read_objects(connection);
             print_header!("EXISTENCIAS");
             print_all_stock(connection, list);
+        }
+        "2" => {
+            *option= String::from("");
+            clear();
+            print_objects(read_objects(connection));
+            let mut id = String::from("");
+            println!("\nInserta el ID del objeto que desea añadir o retirar:");
+            stdin().read_line(&mut id);
+            match id.trim().parse::<i32>() {
+                Ok(obj_id) => {
+                    let id = obj_id;
+                    match get_object_by_id(obj_id, read_objects(connection)) {
+                        Some(obj) => {
+                            clear();
+                            let mut mode = String::from("");
+                            print_all_stock(connection, vec![obj.clone()]);
+                            println!("\n1. SET: El número que introduzcas sobrescribirá la cantidad");
+                            println!("2. ADD: El número que introduzcas se sumará, o se restará si es negativo");
+                            println!("Especifica el modo de inserción:");
+                            let mut set_mode:bool = false;
+                            stdin().read_line(&mut mode);
+                            match mode.trim() {
+                                "1" => {
+                                    set_mode = true;
+                                }
+                                "2" => {
+                                    set_mode = false;
+                                }
+                                _ => {
+                                    println!("Ningún modo fue seleccionado. Se asignará el modo ADD");
+                                }
+                            }
+                            let mut cantidad = String::from("");
+                            println!("Ingresa la cantidad a realizar la operación");
+                            stdin().read_line(&mut cantidad);
+                            match cantidad.trim().parse::<i32>() {
+                                Ok(cantidad) => {
+                                    let mut loc = String::from("");
+                                    println!("1. Aplicar cambios en CASA");
+                                    println!("2. Aplicar cambios en TARA");
+                                    println!("\nSelecciona el lugar en el que hacer la operación");
+                                    stdin().read_line(&mut loc);
+                                    let mut location = Procedencia::Casa;
+                                    match loc.trim() {
+                                        "1" => {
+                                            location = Procedencia::Casa;
+                                        }
+                                        "2" => {
+                                            location= Procedencia::Tara;
+                                        }
+                                        _ => {
+                                            println!("Ningún lugar fue seleccionado. Se asignará CASA");
+                                        }
+                                    }
+                                    println!("Se realizará una operación con la siguiente configuración:");
+                                    println!("OBJ:{}\nSET: {}\nCAN:{}\nLOC:{:?}", obj.nombre, set_mode, cantidad, location);
+                                    println!("\nContinuar? (Pon S para aceptar, y cualquier cosa para cancelar)");
+                                    stdin().read_line(option);
+                                    match option.trim() {
+                                        "S" | "s" => {
+                                            match update_stock(connection, id, set_mode, cantidad, location) {
+                                                Ok(()) => {
+                                                    println!("La base de datos se actualizó satisfactoriamente");
+                                                }
+                                                Err(e) => {
+                                                    println!("Ocurrió un error al actualizar la base de datos: {}", e);
+                                                }
+                                            }
+                                        }
+                                        _ => {
+                                            println!("Operación cancelada.");
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    println!("Hubo un error con la cantidad ingresada. ¿Ha dado un número? {}", e);
+                                }
+                            }
+
+                        }
+                        None => {
+                            println!("No se encontró el id en la base de datos. Vuelve a intentarlo");
+                        }
+                    }
+
+                }
+                Err(e) => {
+                    println!("Ocurrió un error con el id proporcionado. ¿Ha dado un número? {}", e);
+                }
+            }
         }
         "4" => {
             *option = String::from("");
