@@ -55,14 +55,13 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
     println!("\n¿Qué deseas hacer?");
     *option = String::from("");
     stdin().read_line( option);
-    //TODO: opción 3
     match option.trim() {
         "1" => {
             *option= String::from("");
             clear();
             let list= read_objects(connection);
             print_header!("EXISTENCIAS");
-            print_all_stock(connection, list);
+            print_all_stock(connection, list, false);
         }
         "2" => {
             *option= String::from("");
@@ -78,7 +77,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                         Some(obj) => {
                             clear();
                             let mut mode = String::from("");
-                            print_all_stock(connection, vec![obj.clone()]);
+                            print_all_stock(connection, vec![obj.clone()], false);
                             println!("\n1. SET: El número que introduzcas sobrescribirá la cantidad");
                             println!("2. ADD: El número que introduzcas se sumará, o se restará si es negativo");
                             println!("Especifica el modo de inserción:");
@@ -98,7 +97,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                             let mut cantidad = String::from("");
                             println!("Ingresa la cantidad a realizar la operación");
                             stdin().read_line(&mut cantidad);
-                            match cantidad.trim().parse::<i32>() {
+                            match cantidad.trim().parse::<f32>() {
                                 Ok(cantidad) => {
                                     let mut loc = String::from("");
                                     println!("1. Aplicar cambios en CASA");
@@ -123,7 +122,7 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                                     stdin().read_line(option);
                                     match option.trim() {
                                         "S" | "s" => {
-                                            match update_stock(connection, id, set_mode, cantidad, location) {
+                                            match update_stock(connection, id, set_mode, cantidad, &location) {
                                                 Ok(()) => {
                                                     println!("La base de datos se actualizó satisfactoriamente");
                                                 }
@@ -151,6 +150,79 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                 }
                 Err(e) => {
                     println!("Ocurrió un error con el id proporcionado. ¿Ha dado un número? {}", e);
+                }
+            }
+        }
+        "3" => {
+            *option = String::from("");
+            let objs = read_objects(connection);
+            print_all_stock(connection, objs.clone(), true);
+            let mut id = String::new();
+            println!("Introduce el ID del objeto a transladar");
+            stdin().read_line(&mut id);
+            match id.trim().parse::<i32>() {
+                Ok(id) => {
+                    match get_object_by_id(id, objs) {
+                        Some(obj) => {
+                            println!("1. Transferir de Casa a Tara\n2. Transferir de Tara a Casa");
+                            let mut proc = String::new();
+                            stdin().read_line(&mut proc);
+                            let mut procedence = Procedencia::Casa;
+                            match proc.trim() {
+                                "1" => {
+                                    procedence= Procedencia::Casa;
+                                }
+                                "2" => {
+                                    procedence= Procedencia::Tara;
+                                }
+                                _ => {
+                                    println!("Opción inválida, usando por defecto: de Casa a Tara");
+                                }
+                            }
+                            println!("Ingresa la cantidad a transladar: ");
+                            let mut quant = String::new();
+                            stdin().read_line(&mut quant);
+                            match quant.trim().parse::<f32>() {
+                                Ok(quant) => {
+                                    println!("¿Transladar {} {} de {}, {} -> {}? (Pon S para aceptar, cualquier otra cosa para cancelar)", quant, obj.medida, obj.nombre, get_string_name(&procedence), get_string_name(&contrary(&procedence)));
+                                    stdin().read_line(option);
+                                    match option.trim() {
+                                        "S" | "s" => {
+                                            match update_stock(connection, obj.id, false, -quant, &procedence) {
+                                                Ok(()) => {
+                                                    match update_stock(connection, obj.id, false, quant, &contrary(&procedence)) {
+                                                        Ok(()) => {
+                                                            println!("Operación realizada satisfactoriamente.");
+                                                        }
+                                                        Err(e) => {
+                                                            println!("Error al hacer la solicitud de añadir en la base de datos: {}", e);
+                                                        }
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    println!("Error al hacer la solicitud de retirada en la base de datos: {}", e);
+                                                }
+                                            }
+
+
+                                        }
+                                        _ => {
+
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    println!("Hubo un error con la cantidad proporcionada. ¿Has puesto un número? {}", e);
+                                }
+                            }
+                        }
+                        None => {
+                            println!("La id proporcionada no corresponde a ningún objeto existente");
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("Error con el id proporcionado. ¿Ha puesto un número? {}", e);
                 }
             }
         }
@@ -277,6 +349,12 @@ fn menu(connection: &mut PooledConn, option: &mut String) {
                     println!("No ha seleccionado ninguna opción. Volviendo al menú");
                 }
             }
+        }
+        "6" => {
+            *option = String::from("");
+            clear();
+            print_title!();
+            println!("Creada por Javier Albero para una necesidad personal y para aprender Rust y SQL.\n");
         }
         _ => {
             println!("No ha seleccionado ninguna opción. Volviendo al menú");
