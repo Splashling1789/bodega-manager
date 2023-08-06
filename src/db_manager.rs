@@ -158,57 +158,6 @@ pub mod db_manager {
         return None;
     }
 
-    pub fn read_stock(conn: &mut PooledConn, location: Option<Procedencia>) -> Vec<Existencia> {
-        //!Lee las existencias en la tabla indicada en location. Si se indica "None", se devolverán ambas tablas: existencias_home y existencias_tara
-        let mut stock: Vec<Existencia> = vec![];
-        let objects = read_objects(conn);
-        match location {
-            Some(pr) => {
-                match pr {
-                    Procedencia::Casa => {
-                        let list: Vec<(i32, f64)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
-                        for o in list {
-                            stock.push(Existencia {
-                                objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
-                                cantidad: o.1,
-                                procedencia: Procedencia::Casa,
-                            })
-                        }
-                    }
-                    Procedencia::Tara => {
-                        let list: Vec<(i32, f64)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_tara", |(obj, quantity)| (obj, quantity)).unwrap();
-                        for o in list {
-                            stock.push(Existencia {
-                                objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
-                                cantidad: o.1,
-                                procedencia: Procedencia::Tara,
-                            })
-                        }
-                    }
-                }
-            }
-            None => {
-                let list_home: Vec<(i32, f64)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
-                for o in list_home {
-                    stock.push(Existencia {
-                        objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
-                        cantidad: o.1,
-                        procedencia: Procedencia::Casa,
-                    })
-                }
-                let list_tara: Vec<(i32, f64)> = conn.query_map("SELECT id_objeto, cantidad FROM existencias_home", |(obj, quantity)| (obj, quantity)).unwrap();
-                for o in list_tara {
-                    stock.push(Existencia {
-                        objeto: get_object_by_id(o.0, objects.clone()).unwrap(),
-                        cantidad: o.1,
-                        procedencia: Procedencia::Tara,
-                    })
-                }
-            }
-        }
-        return stock;
-    }
-
     pub fn get_item_index(list: Vec<Existencia>, id: i32, location: Procedencia) -> Option<usize> {
         //!Obtiene la cantidad de un objeto y su posición en la lista, dado su id, de una de las tablas indicadas en location
         for i in 0..list.len() {
@@ -264,8 +213,8 @@ pub mod db_manager {
 
     pub fn update_stock(conn: &mut PooledConn, id:i32, set_mode:bool, quant: f32, location: &Procedencia) -> Result<(), mysql::Error> {
         //!Actualiza un valor de existencias de un objeto con la id dada. Si set_mode es verdadero, se reemplazará el valor actual por quant, y si es false, se sumará el valor quant, positivo o negativo. location indica en qué base de datos realizar la operación
-        let mut query = String::new();
-        let mut mode = ";";
+        let mut query:String;
+        let mut mode:&str;
         match set_mode {
             true => {
                 mode = ":quant";

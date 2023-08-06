@@ -4,10 +4,8 @@ mod db_manager;
 use clearscreen::clear;
 use connection_manager::connection_manager::connect;
 use db_manager::db_manager::*;
-use mysql::prelude::Queryable;
 use mysql::PooledConn;
-use std::io::{stdin, BufRead, Read};
-use std::ops::{Add, Deref};
+use std::io::{stdin, BufRead};
 
 ///Título del programa
 const TITLE: &str = "LA BODEGA ALBERO";
@@ -17,16 +15,16 @@ const MENU_SIZE: u16 = 55;
 #[doc = "Imprime el título determinado por la constante TITLE inicial con una anchura determinada por la constante MENU_SIZE"]
 macro_rules! print_title {
     () => {
-        for i in 1..MENU_SIZE {
+        for _ in 1..MENU_SIZE {
             print!("-");
         }
         print!("\n");
-        for i in 1..((MENU_SIZE - TITLE.len() as u16) / 2) {
+        for _ in 1..((MENU_SIZE - TITLE.len() as u16) / 2) {
             print!(" ");
         }
         print!("{}", TITLE);
         print!("\n");
-        for i in 1..MENU_SIZE {
+        for _ in 1..MENU_SIZE {
             print!("-");
         }
         print!("\n");
@@ -36,11 +34,11 @@ macro_rules! print_title {
 #[doc = "Imprime un encabezado especificado en $title, con el tamaño especificado por la constante MENU_SIZE"]
 macro_rules! print_header {
     ($title: expr) => {
-        for i in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
+        for _ in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
             print!("-");
         }
         print!(" {} ", $title);
-        for i in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
+        for _ in 1..((MENU_SIZE - stringify!($title).len() as u16) / 2) {
             print!("-");
         }
         print!("\n");
