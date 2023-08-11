@@ -13,8 +13,6 @@ pub mod db_manager {
     pub fn contrary(loc: &Procedencia) -> Procedencia {
         if *loc == Procedencia::Casa {
             return Procedencia::Tara;
-        } else if *loc == Procedencia::Tara {
-            return Procedencia::Casa;
         } else {
             return Procedencia::Casa;
         }
@@ -23,8 +21,6 @@ pub mod db_manager {
     pub fn get_string_name(loc: &Procedencia) -> String {
         if *loc == Procedencia::Casa {
             return String::from("Casa");
-        } else if *loc == Procedencia::Tara {
-            return String::from("Tara");
         } else {
             return String::from("???");
         }
