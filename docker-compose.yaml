@@ -1,0 +1,12 @@
+# WARNING: You may want to change user and password for security reasons
+version: '3'
+services:
+  bodega-db:
+    image: mysql/mysql-server
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=1234!
