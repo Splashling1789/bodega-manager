@@ -1,4 +1,4 @@
-# WARNING: You may want to change user and password for security reasons
+# Create an .env file in the same folder, in order to specify USER and PASSWORD
 version: '3'
 services:
   bodega-db:
@@ -8,5 +8,14 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_RANDOM_ROOT_PASSWORD=true
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=1234!
+      - MYSQL_USER=$USER
+      - MYSQL_PASSWORD=$PASSWORD
+      - MYSQL_DATABASE=bodega
+
+  query-runner:
+    image: mysql/mysql-server
+    depends_on:
+      - bodega-db
+    volumes:
+      - ./sql-queries:/sql-queries
+    command: ["sh", "-c", "sleep 30 && mysql -h bodega-db -u $USER -p$PASSWORD bodega -e 'source /sql-queries/init-db.sql'"]
