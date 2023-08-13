@@ -1,2 +1,3 @@
 /target
 .env
+sql-queries/init-categories.sql
